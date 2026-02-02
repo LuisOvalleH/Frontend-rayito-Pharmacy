@@ -1,0 +1,106 @@
+.servicesPage {
+  padding-bottom: 40px;
+}
+
+.servicesHero {
+  padding: 56px 0;
+  background: linear-gradient(180deg, #f7faff, #f2f7ff);
+  border-bottom: 1px solid #e5edf7;
+}
+
+.servicesHero h1 {
+  margin: 0 0 10px;
+  font-size: 36px;
+}
+
+.servicesHero p {
+  max-width: 720px;
+  color: #56657a;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  margin-bottom: 18px;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.serviceBox {
+  background: #fff;
+  border: 1px solid #e5edf7;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 18px rgba(2, 32, 71, 0.06);
+}
+
+.serviceBox h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.serviceBox p {
+  margin: 0;
+  color: #56657a;
+  line-height: 1.55;
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.processStep {
+  background: #fff;
+  border: 1px solid #e5edf7;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+}
+
+.processStep span {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-weight: 900;
+  color: #0a2e57;
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.trustItem {
+  background: #fff;
+  border: 1px solid #e5edf7;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.trustItem p {
+  margin: 6px 0 0;
+  color: #56657a;
+}
+
+.closingText {
+  text-align: center;
+  color: #56657a;
+  max-width: 720px;
+}
+
+/* responsive */
+@media (max-width: 980px) {
+  .servicesGrid,
+  .trustGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .processGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
