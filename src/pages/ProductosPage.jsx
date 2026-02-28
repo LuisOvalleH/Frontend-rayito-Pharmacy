@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getProducts } from "../api/products";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
@@ -12,7 +12,6 @@ export default function ProductosPage() {
 
   // filtros UI
   const [q, setQ] = useState("");
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [sort, setSort] = useState("relevancia"); // relevancia | precio_asc | precio_desc | nombre
 
   // filtros multi
@@ -55,7 +54,7 @@ export default function ProductosPage() {
   // helpers
   const norm = (v) => String(v ?? "").trim().toLowerCase();
 
-  const normalizeEstado = (p) => {
+  const normalizeEstado = useCallback((p) => {
     const e = norm(p?.estado);
 
     if (e.includes("des") || e.includes("discont")) return "DESCONTINUADO";
@@ -65,7 +64,7 @@ export default function ProductosPage() {
     // fallback por boolean disponible
     const disp = p?.disponible ?? true;
     return disp ? "DISPONIBLE" : "AGOTADO";
-  };
+  }, []);
 
   // ✅ aquí está el arreglo real:
   // devolvemos { id: "1", nombre: "Analgésicos" }
@@ -135,11 +134,6 @@ export default function ProductosPage() {
       list = list.filter((p) => selectedStates.has(normalizeEstado(p)));
     }
 
-    // checkbox: solo disponibles
-    if (onlyAvailable) {
-      list = list.filter((p) => normalizeEstado(p) === "DISPONIBLE");
-    }
-
     // ordenar
     const priceNum = (v) => {
       const n = Number(v);
@@ -152,7 +146,7 @@ export default function ProductosPage() {
       list.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
 
     return list;
-  }, [products, q, onlyAvailable, sort, selectedCats, selectedStates,priceMin,priceMax]);
+  }, [products, q, sort, selectedCats, selectedStates, priceMin, priceMax, normalizeEstado]);
 
   return (
     <div className="catalogWrap">

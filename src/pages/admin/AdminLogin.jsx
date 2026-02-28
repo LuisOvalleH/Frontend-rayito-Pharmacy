@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-//import { login } from "../../api/auth";
+import { login } from "../../api/auth";
 
 export default function AdminLogin() {
   const nav = useNavigate();
@@ -10,10 +10,19 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e) => {
-  e.preventDefault();
-  localStorage.setItem("access", "dummy");
-  nav("/admin", { replace: true });
-};
+    e.preventDefault();
+    setErr("");
+    setLoading(true);
+    try {
+      await login(username, password);
+      nav("/admin", { replace: true });
+    } catch (error) {
+      const detail = error?.response?.data?.detail;
+      setErr(detail || error.message || "No se pudo iniciar sesion.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", padding: "60px 18px" }}>

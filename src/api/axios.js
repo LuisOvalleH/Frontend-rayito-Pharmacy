@@ -20,6 +20,7 @@ const setTokens = ({ access, refresh }) => {
 const clearTokens = () => {
   localStorage.removeItem("access");
   localStorage.removeItem("refresh");
+  localStorage.removeItem("is_admin");
 };
 
 instance.interceptors.request.use((config) => {
