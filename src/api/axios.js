@@ -8,7 +8,7 @@ if (!BASE_URL) {
 
 const instance = axios.create({
   baseURL: BASE_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { Accept: "application/json" },
 });
 
 const getAccess = () => localStorage.getItem("access");
