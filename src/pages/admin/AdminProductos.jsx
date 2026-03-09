@@ -14,6 +14,9 @@ const EMPTY_FORM = {
   precio: "",
   categoria: "",
   estado: "disponible",
+  formula: "",
+  registro: "",
+  presentacion: "",
 };
 
 export default function AdminProductos() {
@@ -63,25 +66,27 @@ export default function AdminProductos() {
     }
   };
 
-  const buildPayload = () => {
-    const currentFile = fileInputRef.current?.files?.[0] || null;
-    const hasSelectedFile = !!(currentFile && currentFile.size > 0);
-    const current = editingId ? products.find((item) => item.id === editingId) : null;
+const buildPayload = () => {
+  const currentFile = fileInputRef.current?.files?.[0] || null;
+  const hasSelectedFile = !!(currentFile && currentFile.size > 0);
+  const current = editingId ? products.find((item) => item.id === editingId) : null;
 
-    return {
-      currentFile,
-      hasSelectedFile,
-      payload: {
-        nombre: form.nombre.trim(),
-        descripcion: form.descripcion.trim(),
-        precio: form.precio || "0",
-        estado: form.estado,
-        categoria: form.categoria || null,
-        imagen: current?.imagen || "",
-      },
-    };
+  return {
+    currentFile,
+    hasSelectedFile,
+    payload: {
+      nombre: form.nombre.trim(),
+      descripcion: form.descripcion.trim(),
+      precio: form.precio || "0",
+      estado: form.estado,
+      categoria: form.categoria || null,
+      imagen: current?.imagen || "",
+      formula: form.formula.trim(),
+      registro: form.registro.trim(),
+      presentacion: form.presentacion.trim(),
+    },
   };
-
+};
   const handleSubmit = async (event) => {
     event.preventDefault();
     const { payload, hasSelectedFile, currentFile } = buildPayload();
@@ -133,6 +138,9 @@ export default function AdminProductos() {
       precio: product.precio || "",
       categoria: product.categoria ? String(product.categoria) : "",
       estado: product.estado || "disponible",
+      formula: product.formula || "",
+      registro: product.registro || "",
+      presentacion: product.presentacion || "",
     });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -224,6 +232,24 @@ export default function AdminProductos() {
               required
               style={inputStyle}
             />
+            <input
+            value={form.formula}
+            onChange={(e) => setForm((prev) => ({ ...prev, formula: e.target.value }))}
+            placeholder="Fórmula"
+            style={inputStyle}
+          />
+          <input
+            value={form.registro}
+            onChange={(e) => setForm((prev) => ({ ...prev, registro: e.target.value }))}
+            placeholder="Registro sanitario"
+            style={inputStyle}
+          />
+          <input
+            value={form.presentacion}
+            onChange={(e) => setForm((prev) => ({ ...prev, presentacion: e.target.value }))}
+            placeholder="Presentación"
+            style={inputStyle}
+          />
             <select
               value={form.categoria}
               onChange={(event) => setForm((prev) => ({ ...prev, categoria: event.target.value }))}
