@@ -54,7 +54,9 @@ export default function AdminLayout() {
               F
             </div>
             <div>
-              <div style={{ fontWeight: 900, color: "#0b2b4b" }}>Panel Admin</div>
+              <div style={{ fontWeight: 900, color: "#0b2b4b" }}>
+                Panel Admin
+              </div>
               <div style={{ fontSize: 12, color: "#5c6b7b" }}>Farquetsa</div>
             </div>
           </div>
@@ -68,6 +70,9 @@ export default function AdminLayout() {
             </NavLink>
             <NavLink to="/admin/categorias" style={linkStyle}>
               Categorías
+            </NavLink>
+            <NavLink to="/admin/usuarios" style={linkStyle}>
+              Usuarios
             </NavLink>
 
             <button
