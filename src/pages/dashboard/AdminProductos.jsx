@@ -16,7 +16,7 @@ const EMPTY_FORM = {
   estado: "disponible",
   formula: "",
   registro: "",
-  presentacion: "",
+  presentacion: ""
 };
 
 export default function AdminProductos() {

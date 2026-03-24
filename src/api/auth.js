@@ -3,6 +3,7 @@ import api from "./axios";
 const ACCESS_KEY = "access";
 const REFRESH_KEY = "refresh";
 const ADMIN_FLAG_KEY = "is_admin";
+const ROLE_KEY = "role";
 
 export async function login(username, password) {
   const { data } = await api.post("/auth/login/", { username, password });
@@ -16,7 +17,12 @@ export async function login(username, password) {
   }
 
   localStorage.setItem(ADMIN_FLAG_KEY, "1");
+  localStorage.setItem(ROLE_KEY, me.role);
   return { ...data, me };
+}
+
+export function getRole() {
+  return localStorage.getItem(ROLE_KEY);
 }
 
 export async function getMe() {
@@ -28,6 +34,7 @@ export function logout() {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(ADMIN_FLAG_KEY);
+  localStorage.removeItem(ROLE_KEY);
 }
 
 function decodePayload(token) {
