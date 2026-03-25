@@ -9,7 +9,11 @@ export default function Navbar() {
     <header className="navWrap">
       <div className="navInner">
         <div className="brand">
-          <div className="brandLogo">F</div>
+          <img
+            className="brandLogo"
+            src="/logo-farquetsa.png"
+            alt="Logo de Farquetsa"
+          />
           <div className="brandText">
             <strong>Farquetsa</strong>
             <span>Farmaceutica S.A</span>

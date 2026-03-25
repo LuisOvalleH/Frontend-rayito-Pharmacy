@@ -34,14 +34,17 @@ export default function AdminProductos() {
 
   const categoryMap = useMemo(
     () => new Map(categories.map((item) => [String(item.id), item.nombre])),
-    [categories]
+    [categories],
   );
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError("");
-      const [productData, categoryData] = await Promise.all([getProducts(), getCategories()]);
+      const [productData, categoryData] = await Promise.all([
+        getProducts(),
+        getCategories(),
+      ]);
       setProducts(Array.isArray(productData) ? productData : []);
       setCategories(Array.isArray(categoryData) ? categoryData : []);
     } catch {
@@ -66,33 +69,47 @@ export default function AdminProductos() {
     }
   };
 
-const buildPayload = () => {
-  const currentFile = fileInputRef.current?.files?.[0] || null;
-  const hasSelectedFile = !!(currentFile && currentFile.size > 0);
-  const current = editingId ? products.find((item) => item.id === editingId) : null;
+  const buildPayload = () => {
+    const currentFile = fileInputRef.current?.files?.[0] || null;
+    const hasSelectedFile = !!(currentFile && currentFile.size > 0);
+    const current = editingId
+      ? products.find((item) => item.id === editingId)
+      : null;
 
-  return {
-    currentFile,
-    hasSelectedFile,
-    payload: {
-      nombre: form.nombre.trim(),
-      descripcion: form.descripcion.trim(),
-      precio: form.precio || "0",
-      estado: form.estado,
-      categoria: form.categoria || null,
-      imagen: current?.imagen || "",
-      formula: form.formula.trim(),
-      registro: form.registro.trim(),
-      presentacion: form.presentacion.trim(),
-    },
+    return {
+      currentFile,
+      hasSelectedFile,
+      payload: {
+        nombre: form.nombre.trim(),
+        descripcion: form.descripcion.trim(),
+        precio: form.precio || "0",
+        estado: form.estado,
+        categoria: form.categoria || null,
+        imagen: current?.imagen || "",
+        formula: form.formula.trim(),
+        registro: form.registro.trim(),
+        presentacion: form.presentacion.trim(),
+      },
+    };
   };
-};
   const handleSubmit = async (event) => {
     event.preventDefault();
     const { payload, hasSelectedFile, currentFile } = buildPayload();
+    const precioNum = parseFloat(payload.precio);
 
     if (!editingId && !hasSelectedFile) {
       setError("Debes seleccionar una imagen antes de crear el producto.");
+      setSuccess("");
+      return;
+    }
+
+    if (isNaN(precioNum) || precioNum <= 0) {
+      setError("El precio debe ser mayor a Q0.00.");
+      setSuccess("");
+      return;
+    }
+    if (precioNum > 999999) {
+      setError("El precio no puede superar Q999,999.00.");
       setSuccess("");
       return;
     }
@@ -151,7 +168,9 @@ const buildPayload = () => {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Se eliminara este producto. Deseas continuar?");
+    const confirmDelete = window.confirm(
+      "Se eliminara este producto. Deseas continuar?",
+    );
     if (!confirmDelete) return;
 
     try {
@@ -186,11 +205,19 @@ const buildPayload = () => {
           boxShadow: "0 8px 18px rgba(2, 32, 71, 0.06)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
           <div>
             <h1 style={{ margin: 0, color: "#0b2b4b" }}>Productos</h1>
             <p style={{ color: "#5c6b7b", margin: "8px 0 0" }}>
-              Crea, edita y elimina productos. Las imagenes se suben desde la PC.
+              Crea, edita y elimina productos. Las imagenes se suben desde la
+              PC.
             </p>
           </div>
           {editingId && (
@@ -213,18 +240,32 @@ const buildPayload = () => {
           )}
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} style={{ display: "grid", gap: 14, marginTop: 18 }}>
-          <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          style={{ display: "grid", gap: 14, marginTop: 18 }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gap: 14,
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            }}
+          >
             <input
               value={form.nombre}
-              onChange={(event) => setForm((prev) => ({ ...prev, nombre: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, nombre: event.target.value }))
+              }
               placeholder="Nombre del producto"
               required
               style={inputStyle}
             />
             <input
               value={form.precio}
-              onChange={(event) => setForm((prev) => ({ ...prev, precio: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, precio: event.target.value }))
+              }
               placeholder="Precio"
               type="number"
               min="0"
@@ -233,26 +274,34 @@ const buildPayload = () => {
               style={inputStyle}
             />
             <input
-            value={form.formula}
-            onChange={(e) => setForm((prev) => ({ ...prev, formula: e.target.value }))}
-            placeholder="Fórmula"
-            style={inputStyle}
-          />
-          <input
-            value={form.registro}
-            onChange={(e) => setForm((prev) => ({ ...prev, registro: e.target.value }))}
-            placeholder="Registro sanitario"
-            style={inputStyle}
-          />
-          <input
-            value={form.presentacion}
-            onChange={(e) => setForm((prev) => ({ ...prev, presentacion: e.target.value }))}
-            placeholder="Presentación"
-            style={inputStyle}
-          />
+              value={form.formula}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, formula: e.target.value }))
+              }
+              placeholder="Fórmula"
+              style={inputStyle}
+            />
+            <input
+              value={form.registro}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, registro: e.target.value }))
+              }
+              placeholder="Registro sanitario"
+              style={inputStyle}
+            />
+            <input
+              value={form.presentacion}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, presentacion: e.target.value }))
+              }
+              placeholder="Presentación"
+              style={inputStyle}
+            />
             <select
               value={form.categoria}
-              onChange={(event) => setForm((prev) => ({ ...prev, categoria: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, categoria: event.target.value }))
+              }
               style={inputStyle}
             >
               <option value="">Sin categoria</option>
@@ -264,7 +313,9 @@ const buildPayload = () => {
             </select>
             <select
               value={form.estado}
-              onChange={(event) => setForm((prev) => ({ ...prev, estado: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, estado: event.target.value }))
+              }
               style={inputStyle}
             >
               <option value="disponible">Disponible</option>
@@ -275,7 +326,9 @@ const buildPayload = () => {
 
           <textarea
             value={form.descripcion}
-            onChange={(event) => setForm((prev) => ({ ...prev, descripcion: event.target.value }))}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, descripcion: event.target.value }))
+            }
             placeholder="Descripcion"
             rows={4}
             style={{ ...inputStyle, resize: "vertical" }}
@@ -291,7 +344,9 @@ const buildPayload = () => {
               alignItems: "start",
             }}
           >
-            <label style={{ color: "#20344f", fontWeight: 700 }}>Imagen del producto</label>
+            <label style={{ color: "#20344f", fontWeight: 700 }}>
+              Imagen del producto
+            </label>
             <input
               ref={fileInputRef}
               type="file"
@@ -305,13 +360,23 @@ const buildPayload = () => {
               <img
                 src={preview}
                 alt="Vista previa del producto"
-                style={{ width: 160, height: 160, objectFit: "cover", borderRadius: 14, border: "1px solid #e5edf7" }}
+                style={{
+                  width: 160,
+                  height: 160,
+                  objectFit: "cover",
+                  borderRadius: 14,
+                  border: "1px solid #e5edf7",
+                }}
               />
             )}
           </div>
 
-          {error && <div style={{ color: "#b42318", fontWeight: 700 }}>{error}</div>}
-          {success && <div style={{ color: "#166534", fontWeight: 700 }}>{success}</div>}
+          {error && (
+            <div style={{ color: "#b42318", fontWeight: 700 }}>{error}</div>
+          )}
+          {success && (
+            <div style={{ color: "#166534", fontWeight: 700 }}>{success}</div>
+          )}
 
           <button
             type="submit"
@@ -326,7 +391,11 @@ const buildPayload = () => {
               cursor: "pointer",
             }}
           >
-            {saving ? "Guardando..." : editingId ? "Actualizar producto" : "Crear producto"}
+            {saving
+              ? "Guardando..."
+              : editingId
+                ? "Actualizar producto"
+                : "Crear producto"}
           </button>
         </form>
       </section>
@@ -341,7 +410,9 @@ const buildPayload = () => {
       >
         <h2 style={{ margin: 0, color: "#0b2b4b" }}>Listado actual</h2>
         <p style={{ color: "#5c6b7b", marginTop: 8 }}>
-          {loading ? "Cargando..." : `${products.length} producto(s) registrados`}
+          {loading
+            ? "Cargando..."
+            : `${products.length} producto(s) registrados`}
         </p>
 
         {loading ? (
@@ -364,23 +435,39 @@ const buildPayload = () => {
                 }}
               >
                 <img
-                  src={product.imagen || "https://via.placeholder.com/92?text=Img"}
+                  src={
+                    product.imagen || "https://via.placeholder.com/92?text=Img"
+                  }
                   alt={product.nombre}
-                  style={{ width: 92, height: 92, objectFit: "cover", borderRadius: 12 }}
+                  style={{
+                    width: 92,
+                    height: 92,
+                    objectFit: "cover",
+                    borderRadius: 12,
+                  }}
                 />
 
                 <div>
-                  <div style={{ fontWeight: 900, color: "#0b2b4b" }}>{product.nombre}</div>
+                  <div style={{ fontWeight: 900, color: "#0b2b4b" }}>
+                    {product.nombre}
+                  </div>
                   <div style={{ color: "#5c6b7b", marginTop: 4 }}>
-                    {categoryMap.get(String(product.categoria)) || product.categoria_nombre || "Sin categoria"}
+                    {categoryMap.get(String(product.categoria)) ||
+                      product.categoria_nombre ||
+                      "Sin categoria"}
                   </div>
                   <div style={{ color: "#20344f", marginTop: 4 }}>
-                    Q{(Number(product.precio) || 0).toFixed(2)} | {product.estado}
+                    Q{(Number(product.precio) || 0).toFixed(2)} |{" "}
+                    {product.estado}
                   </div>
                 </div>
 
                 <div style={{ display: "grid", gap: 8 }}>
-                  <button type="button" onClick={() => handleEdit(product)} style={secondaryBtnStyle}>
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(product)}
+                    style={secondaryBtnStyle}
+                  >
                     Editar
                   </button>
                   <button
