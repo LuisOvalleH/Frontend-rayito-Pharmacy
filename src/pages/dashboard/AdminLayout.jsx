@@ -1,12 +1,14 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { logout } from "../../api/auth";
+import { logout, getRole} from "../../api/auth";
+
 
 export default function AdminLayout() {
+  const role = getRole();
   const nav = useNavigate();
 
   const salir = () => {
     logout();
-    nav("/admin/login", { replace: true });
+    nav("/login", { replace: true });
   };
 
   const linkStyle = ({ isActive }) => ({
@@ -18,6 +20,8 @@ export default function AdminLayout() {
     background: isActive ? "#eaf2ff" : "transparent",
     border: isActive ? "1px solid #dbe7f7" : "1px solid transparent",
   });
+
+
 
   return (
     <div style={{ minHeight: "100vh", background: "#f7fbff" }}>
@@ -62,18 +66,31 @@ export default function AdminLayout() {
           </div>
 
           <nav style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavLink to="/admin" end style={linkStyle}>
-              Inicio
-            </NavLink>
-            <NavLink to="/admin/productos" style={linkStyle}>
-              Productos
-            </NavLink>
-            <NavLink to="/admin/categorias" style={linkStyle}>
-              Categorías
-            </NavLink>
-            <NavLink to="/admin/usuarios" style={linkStyle}>
-              Usuarios
-            </NavLink>
+
+            {role === "admin" && (
+              <><NavLink to="/admin" end style={linkStyle}>
+                Inicio
+              </NavLink>
+              <NavLink to="/admin/productos" style={linkStyle}>
+                  Productos
+              </NavLink>
+              <NavLink to="/admin/categorias" style={linkStyle}>
+                  Categorías
+              </NavLink></> )}
+
+            {role === "superadmin" && (
+              <><NavLink to="/admin" end style={linkStyle}>
+                Inicio
+              </NavLink>
+              <NavLink to="/admin/productos" style={linkStyle}>
+                  Productos
+              </NavLink>
+              <NavLink to="/admin/categorias" style={linkStyle}>
+                  Categorías
+              </NavLink>
+              <NavLink to="/admin/usuarios" style={linkStyle}>
+                  Usuarios
+            </NavLink></>)}
 
             <button
               onClick={salir}

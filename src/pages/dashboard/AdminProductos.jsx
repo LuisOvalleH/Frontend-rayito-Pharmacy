@@ -16,7 +16,7 @@ const EMPTY_FORM = {
   estado: "disponible",
   formula: "",
   registro: "",
-  presentacion: "",
+  presentacion: ""
 };
 
 export default function AdminProductos() {
@@ -95,9 +95,21 @@ export default function AdminProductos() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const { payload, hasSelectedFile, currentFile } = buildPayload();
+    const precioNum = parseFloat(payload.precio);
 
     if (!editingId && !hasSelectedFile) {
       setError("Debes seleccionar una imagen antes de crear el producto.");
+      setSuccess("");
+      return;
+    }
+
+    if (isNaN(precioNum) || precioNum <= 0) {
+      setError("El precio debe ser mayor a Q0.00.");
+      setSuccess("");
+      return;
+    }
+    if (precioNum > 999999) {
+      setError("El precio no puede superar Q999,999.00.");
       setSuccess("");
       return;
     }
