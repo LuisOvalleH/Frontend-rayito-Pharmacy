@@ -74,6 +74,9 @@ export default function AdminLayout() {
             <NavLink to="/admin/usuarios" style={linkStyle}>
               Usuarios
             </NavLink>
+            <NavLink to="/admin/historial" style={linkStyle}>
+              Historial
+            </NavLink>
 
             <button
               onClick={salir}
