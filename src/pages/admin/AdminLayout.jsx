@@ -71,6 +71,9 @@ export default function AdminLayout() {
             <NavLink to="/admin/categorias" style={linkStyle}>
               Categorías
             </NavLink>
+            <NavLink to="/admin/servicios" style={linkStyle}>
+              Servicios
+            </NavLink>
             <NavLink to="/admin/usuarios" style={linkStyle}>
               Usuarios
             </NavLink>
