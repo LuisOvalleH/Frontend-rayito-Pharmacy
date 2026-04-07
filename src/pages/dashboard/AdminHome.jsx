@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getRole } from "../../api/auth";
 import { getProducts } from "../../api/products";
 import { getCategories } from "../../api/categories";
@@ -9,11 +9,7 @@ export default function AdminHome() {
   const [stats, setStats] = useState({ products: 0, categories: 0, users: 0 });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const [productsRes, categoriesRes] = await Promise.all([
         getProducts(),
@@ -49,7 +45,11 @@ export default function AdminHome() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [role]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   return (
     <div style={{ display: "grid", gap: 18 }}>

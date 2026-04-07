@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getServicios,
   createServicio,
@@ -36,7 +36,7 @@ export default function AdminServicios() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -52,11 +52,11 @@ export default function AdminServicios() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const resetForm = () => {
     setForm(EMPTY_FORM);
@@ -231,6 +231,22 @@ export default function AdminServicios() {
         <h1 style={{ margin: 0, color: "#0b2b4b" }}>
           Administrar contenido
         </h1>
+
+        {loading && (
+          <p style={{ color: "#5c6b7b", margin: "10px 0 0" }}>
+            Cargando contenido...
+          </p>
+        )}
+        {error && (
+          <p style={{ color: "#b42318", margin: "10px 0 0", fontWeight: 700 }}>
+            {error}
+          </p>
+        )}
+        {success && (
+          <p style={{ color: "#166534", margin: "10px 0 0", fontWeight: 700 }}>
+            {success}
+          </p>
+        )}
 
         <form
           onSubmit={handleSubmit}

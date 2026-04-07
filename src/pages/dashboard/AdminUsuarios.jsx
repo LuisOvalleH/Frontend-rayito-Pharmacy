@@ -1,5 +1,5 @@
 // AdminUsuarios.jsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getRole } from "../../api/auth";
 import {
   getAdmins,
@@ -33,11 +33,7 @@ export default function AdminUsuarios() {
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     if (role !== "superadmin") {
       setError("Solo superadmin puede gestionar usuarios.");
       setLoading(false);
@@ -55,7 +51,11 @@ export default function AdminUsuarios() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [role]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const resetForm = ({ clearFeedback = true } = {}) => {
     setForm(EMPTY_FORM);
