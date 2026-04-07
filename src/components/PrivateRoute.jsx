@@ -1,37 +1,43 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { getMe, isAuthed, logout } from "../api/auth";
+import { isAuthed, getRole } from "../api/auth";
 
-export default function PrivateRoute() {
+export default function PrivateRoute({ allowedRoles = [] }) {
   const [status, setStatus] = useState("checking");
 
   useEffect(() => {
     let mounted = true;
+
     const verify = async () => {
       if (!isAuthed()) {
         if (mounted) setStatus("denied");
         return;
       }
+
       try {
-        const me = await getMe();
-        if (!me?.is_staff) {
-          logout();
+        const role = getRole()
+          
+        if (!allowedRoles.includes(role)) {
+          setStatus("denied");;
           if (mounted) setStatus("denied");
           return;
         }
+
         if (mounted) setStatus("ok");
       } catch {
-        logout();
+        setStatus("denied");;
         if (mounted) setStatus("denied");
       }
     };
 
     verify();
+
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [allowedRoles]);
 
   if (status === "checking") return null;
-  return status === "ok" ? <Outlet /> : <Navigate to="/admin/login" replace />;
+
+  return status === "ok" ? <Outlet /> : <Navigate to="/login" replace />;
 }

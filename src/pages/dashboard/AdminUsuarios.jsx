@@ -1,76 +1,78 @@
 // AdminUsuarios.jsx
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { getRole } from "../../api/auth";
+import {
+  getAdmins,
+  getAdmin,
+  createAdmin,
+  updateAdmin,
+  deleteAdmin,
+} from "../../api/admin";
 
-const ROLES = [
+const ROLE_OPTIONS = [
   { value: "admin", label: "Administrador" },
-  { value: "editor", label: "Editor" },
-];
-
-const MOCK_USERS = [
-  {
-    id: 1,
-    nombre: "Carlos Méndez",
-    email: "carlos@farquetsa.com",
-    rol: "admin",
-    activo: true,
-  },
-  {
-    id: 2,
-    nombre: "Lucía Hernández",
-    email: "lucia@farquetsa.com",
-    rol: "editor",
-    activo: true,
-  },
-  {
-    id: 3,
-    nombre: "Roberto Ajú",
-    email: "roberto@farquetsa.com",
-    rol: "editor",
-    activo: false,
-  },
+  { value: "superadmin", label: "Superadmin" },
 ];
 
 const EMPTY_FORM = {
-  nombre: "",
+  username: "",
   email: "",
   password: "",
-  rol: "editor",
-  activo: true,
+  role: "admin",
+  is_active: true,
 };
 
 export default function AdminUsuarios() {
-  const nextId = useRef(MOCK_USERS.length + 1);
-  const [users, setUsers] = useState(MOCK_USERS);
+  const role = getRole();
+  const [users, setUsers] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // ── Helpers ───────────────────────────────────────────────────────
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    if (role !== "superadmin") {
+      setError("Solo superadmin puede gestionar usuarios.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const data = await getAdmins();
+      setUsers(Array.isArray(data) ? data : []);
+      setError("");
+    } catch (err) {
+      setUsers([]);
+      handleApiError(err, "Error al cargar la lista de usuarios.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = ({ clearFeedback = true } = {}) => {
     setForm(EMPTY_FORM);
     setEditingId(null);
-    setError("");
     setShowPassword(false);
-    if (clearFeedback) setSuccess("");
+    if (clearFeedback) {
+      setError("");
+      setSuccess("");
+    }
   };
 
   const validate = () => {
-    if (!form.nombre.trim()) return "El nombre es obligatorio.";
-    if (form.nombre.trim().length < 2)
-      return "El nombre debe tener al menos 2 caracteres.";
+    if (!form.username.trim()) return "El nombre de usuario es obligatorio.";
     if (!form.email.trim()) return "El correo electrónico es obligatorio.";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email.trim()))
       return "El correo electrónico no es válido.";
-    const duplicate = users.find(
-      (u) =>
-        u.email.toLowerCase() === form.email.trim().toLowerCase() &&
-        u.id !== editingId,
-    );
-    if (duplicate) return "Ya existe un usuario con ese correo.";
     if (!editingId && !form.password)
       return "La contraseña es obligatoria para nuevos usuarios.";
     if (form.password && form.password.length < 6)
@@ -78,7 +80,34 @@ export default function AdminUsuarios() {
     return null;
   };
 
-  // ── Submit ────────────────────────────────────────────────────────
+  const handleApiError = (err, fallbackMessage) => {
+    const status = err?.response?.status;
+    if (status === 401) {
+      setError("Tu sesión expiró. Vuelve a iniciar sesión.");
+    } else if (status === 403) {
+      setError("No tienes permisos suficientes para realizar esta acción.");
+    } else {
+      setError(fallbackMessage);
+    }
+    setSuccess("");
+  };
+
+  const buildPayload = () => {
+    const payload = {
+      username: form.username.trim(),
+      email: form.email.trim(),
+      is_staff: true,
+      is_superuser: form.role === "superadmin",
+      is_active: form.is_active,
+    };
+
+    if (form.password) {
+      payload.password = form.password;
+    }
+
+    return payload;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationError = validate();
@@ -92,74 +121,104 @@ export default function AdminUsuarios() {
     setError("");
     setSuccess("");
 
-    await new Promise((r) => setTimeout(r, 300)); // simula latencia
+    try {
+      const payload = buildPayload();
 
-    if (editingId) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === editingId
-            ? {
-                ...u,
-                nombre: form.nombre.trim(),
-                email: form.email.trim(),
-                rol: form.rol,
-                activo: form.activo,
-              }
-            : u,
-        ),
+      if (editingId) {
+        await updateAdmin(editingId, payload);
+        // Recargar la lista completa para asegurar consistencia
+        const updatedUsers = await getAdmins();
+        setUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
+        setSuccess("Usuario actualizado correctamente.");
+      } else {
+        await createAdmin(payload);
+        // Recargar la lista completa
+        const updatedUsers = await getAdmins();
+        setUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
+        setSuccess("Usuario creado correctamente.");
+      }
+
+      resetForm({ clearFeedback: false });
+    } catch (err) {
+      handleApiError(
+        err,
+        editingId
+          ? "No se pudo actualizar el usuario."
+          : "No se pudo crear el usuario.",
       );
-      setSuccess("Usuario actualizado.");
-    } else {
-      const newUser = {
-        id: nextId.current++,
-        nombre: form.nombre.trim(),
-        email: form.email.trim(),
-        rol: form.rol,
-        activo: form.activo,
-      };
-      setUsers((prev) => [...prev, newUser]);
-      setSuccess("Usuario creado.");
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
-    resetForm({ clearFeedback: false });
   };
 
-  const handleEdit = (user) => {
+  const handleEdit = async (user) => {
     setEditingId(user.id);
-    setForm({
-      nombre: user.nombre || "",
-      email: user.email || "",
-      password: "",
-      rol: user.rol || "editor",
-      activo: user.activo ?? true,
-    });
+    try {
+      const fullUser = await getAdmin(user.id);
+      setForm({
+        username: fullUser.username || "",
+        email: fullUser.email || "",
+        password: "",
+        role: fullUser.is_superuser ? "superadmin" : "admin",
+        is_active: fullUser.is_active ?? true,
+      });
+    } catch (err) {
+      // Si falla obtener el detalle, usar los datos de la lista
+      setForm({
+        username: user.username || "",
+        email: user.email || "",
+        password: "",
+        role: user.is_superuser ? "superadmin" : "admin",
+        is_active: user.is_active ?? true,
+      });
+      console.error("Error obteniendo detalle del usuario:", err);
+    }
     setError("");
     setSuccess("");
     setShowPassword(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const ok = window.confirm("Se eliminará este usuario. ¿Deseas continuar?");
     if (!ok) return;
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-    if (editingId === id) resetForm();
-    setSuccess("Usuario eliminado.");
-    setError("");
+
+    try {
+      await deleteAdmin(id);
+      // Recargar la lista completa para asegurar consistencia
+      const updatedUsers = await getAdmins();
+      setUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
+      setSuccess("Usuario eliminado correctamente.");
+      setError("");
+      if (editingId === id) resetForm();
+    } catch (err) {
+      handleApiError(err, "No se pudo eliminar el usuario.");
+    }
   };
 
-  // ── Iniciales para avatar ─────────────────────────────────────────
-  const getInitials = (nombre = "") => {
-    const parts = nombre.trim().split(" ").filter(Boolean);
+  const getInitials = (username = "") => {
+    const parts = username.trim().split(" ").filter(Boolean);
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return nombre.charAt(0).toUpperCase();
+    return username.charAt(0).toUpperCase();
   };
 
-  const getRolLabel = (rol) => ROLES.find((r) => r.value === rol)?.label || rol;
+  const getRoleLabel = (value) => {
+    return ROLE_OPTIONS.find((item) => item.value === value)?.label || value;
+  };
+
+  if (role !== "superadmin") {
+    return (
+      <div style={sectionStyle}>
+        <h1 style={{ margin: 0, color: "#0b2b4b" }}>Acceso denegado</h1>
+        <p style={{ color: "#5c6b7b", marginTop: 10 }}>
+          Solo los usuarios con rol <strong>superadmin</strong> pueden acceder a
+          esta sección.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
-      {/* ── Formulario ─────────────────────────────────────────────── */}
       <section style={sectionStyle}>
         <div
           style={{
@@ -172,7 +231,8 @@ export default function AdminUsuarios() {
           <div>
             <h1 style={{ margin: 0, color: "#0b2b4b" }}>Usuarios</h1>
             <p style={{ color: "#5c6b7b", margin: "8px 0 0" }}>
-              Crea, edita y elimina los usuarios con acceso al panel.
+              Desde aquí puedes crear, editar y eliminar usuarios
+              administradores.
             </p>
           </div>
           {editingId && (
@@ -194,11 +254,11 @@ export default function AdminUsuarios() {
             }}
           >
             <input
-              value={form.nombre}
+              value={form.username}
               onChange={(e) =>
-                setForm((prev) => ({ ...prev, nombre: e.target.value }))
+                setForm((prev) => ({ ...prev, username: e.target.value }))
               }
-              placeholder="Nombre completo *"
+              placeholder="Nombre de usuario *"
               required
               style={inputStyle}
             />
@@ -247,17 +307,16 @@ export default function AdminUsuarios() {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
-
             <select
-              value={form.rol}
+              value={form.role}
               onChange={(e) =>
-                setForm((prev) => ({ ...prev, rol: e.target.value }))
+                setForm((prev) => ({ ...prev, role: e.target.value }))
               }
               style={inputStyle}
             >
-              {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
+              {ROLE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -266,24 +325,24 @@ export default function AdminUsuarios() {
           <label style={toggleRowStyle}>
             <div
               onClick={() =>
-                setForm((prev) => ({ ...prev, activo: !prev.activo }))
+                setForm((prev) => ({ ...prev, is_active: !prev.is_active }))
               }
               style={{
                 ...toggleTrackStyle,
-                background: form.activo ? "#0b2b4b" : "#c9d8ee",
+                background: form.is_active ? "#0b2b4b" : "#c9d8ee",
               }}
             >
               <div
                 style={{
                   ...toggleThumbStyle,
-                  transform: form.activo
+                  transform: form.is_active
                     ? "translateX(20px)"
                     : "translateX(2px)",
                 }}
               />
             </div>
             <span style={{ color: "#20344f", fontWeight: 700, fontSize: 14 }}>
-              Usuario {form.activo ? "activo" : "inactivo"}
+              Usuario {form.is_active ? "activo" : "inactivo"}
             </span>
           </label>
 
@@ -304,24 +363,37 @@ export default function AdminUsuarios() {
         </form>
       </section>
 
-      {/* ── Listado ────────────────────────────────────────────────── */}
       <section style={{ ...sectionStyle, boxShadow: "none" }}>
-        <h2 style={{ margin: 0, color: "#0b2b4b" }}>Listado actual</h2>
-        <p style={{ color: "#5c6b7b", marginTop: 8 }}>
-          {`${users.length} usuario(s) registrado(s)`}
-        </p>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h2 style={{ margin: 0, color: "#0b2b4b" }}>Listado actual</h2>
+            <p
+              style={{ color: "#5c6b7b", marginTop: 8 }}
+            >{`${users.length} usuario(s) registrado(s)`}</p>
+          </div>
+          {loading && (
+            <span style={{ color: "#5c6b7b" }}>Cargando usuarios...</span>
+          )}
+        </div>
 
-        {users.length === 0 ? (
+        {users.length === 0 && !loading ? (
           <div style={emptyBoxStyle}>No hay usuarios creados todavía.</div>
         ) : (
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
             {users.map((user) => (
               <article key={user.id} style={rowStyle}>
-                <div style={avatarStyle}>{getInitials(user.nombre)}</div>
-
+                <div style={avatarStyle}>{getInitials(user.username)}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 900, color: "#0b2b4b" }}>
-                    {user.nombre}
+                    {user.username}
                   </div>
                   <div style={{ color: "#5c6b7b", fontSize: 14, marginTop: 2 }}>
                     {user.email}
@@ -334,19 +406,20 @@ export default function AdminUsuarios() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <span style={rolBadgeStyle}>{getRolLabel(user.rol)}</span>
+                    <span style={rolBadgeStyle}>
+                      {getRoleLabel(user.is_superuser ? "superadmin" : "admin")}
+                    </span>
                     <span
                       style={{
                         ...statusBadgeStyle,
-                        background: user.activo ? "#dcfce7" : "#fee2e2",
-                        color: user.activo ? "#166534" : "#b42318",
+                        background: user.is_active ? "#dcfce7" : "#fee2e2",
+                        color: user.is_active ? "#166534" : "#b42318",
                       }}
                     >
-                      {user.activo ? "Activo" : "Inactivo"}
+                      {user.is_active ? "Activo" : "Inactivo"}
                     </span>
                   </div>
                 </div>
-
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button
                     type="button"
@@ -372,7 +445,6 @@ export default function AdminUsuarios() {
   );
 }
 
-// ── Estilos ──────────────────────────────────────────────────────────────
 const sectionStyle = {
   background: "#fff",
   border: "1px solid #e5edf7",
