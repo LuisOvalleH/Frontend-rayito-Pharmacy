@@ -25,23 +25,22 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = (product) => {
-  if (!product?.id) return;
-
-  let wasNew = false; // 👈 bandera
-
-  setItems((prev) => {
-    const idx = prev.findIndex((x) => x.id === product.id);
-    const price = Number(product.precio) || 0;
-
-    if (idx >= 0) {
-      // ya existía → solo suma qty, NO abrir
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
-      return copy;
-    }
-
-    // no existía → lo agregamos y marcamos que fue nuevo
-    wasNew = true;
+    if (!product?.id) return;
+    
+    let wasNew = false; // bandera
+    
+    setItems((prev) => {
+      const idx = prev.findIndex((x) => x.id === product.id);
+      const price = Number(product.precio) || 0;
+      
+      if (idx >= 0) {
+        // ya existía → solo suma qty, NO abrir
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], qty: Math.min(999, copy[idx].qty + 1),};
+        return copy;
+      }
+      // no existía → lo agregamos y marcamos que fue nuevo
+      wasNew = true;
 
     return [
       ...prev,
@@ -55,30 +54,61 @@ export function CartProvider({ children }) {
     ];
   });
 
-  // 👇 solo si fue nuevo
+  // solo si fue nuevo
   if (wasNew) setIsOpen(true);
 };
 
   const removeItem = (id) => setItems((prev) => prev.filter((x) => x.id !== id));
 
   const inc = (id) =>
-    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, qty: x.qty + 1 } : x)));
+    setItems((prev) => prev.map((x) => x.id === id ? { ...x, qty: Math.min(999, x.qty + 1 ) } : x));
 
   const dec = (id) =>
     setItems((prev) =>
-      prev
-        .map((x) => (x.id === id ? { ...x, qty: Math.max(1, x.qty - 1) } : x))
-        .filter((x) => x.qty > 0)
+      prev.map((x) => (x.id === id ? { ...x, qty: Math.max(1, x.qty - 1) } : x))
     );
+  
+  const setQty = (id, value) => {
+    setItems((prev) => 
+      prev.map((x) => {
+        if (x.id !== id) return x;
+        // permitir vacío temporal mientras escribe
+        if (value === "") {
+          return { ...x, qty: "" };
+        }
+        // solo enteros positivos
+        if (!/^\d+$/.test(value)) return x;
+        const parsed = Number(value);
+        const safeQty = Math.min(999, Math.max(1, parsed));
+        return { ...x, qty: safeQty };
+      })
+    );
+  };
+  
+  const normalizeQty = (id) => {
+    setItems((prev) =>
+      prev.map((x) => {
+        if (x.id !== id) return x;
+        const parsed = Number(x.qty);
+        if (!Number.isInteger(parsed) || parsed < 1) {
+          return { ...x, qty: 1 };
+        }
+        if (parsed > 999) {
+          return { ...x, qty: 999 };
+        }
+        return x;
+      })
+    );
+  };
 
   const clear = () => setItems([]);
 
   const subtotal = useMemo(
-    () => items.reduce((acc, x) => acc + (Number(x.precio) || 0) * x.qty, 0),
+    () => items.reduce((acc, x) => acc + (Number(x.precio) || 0) * (Number(x.qty) || 0), 0),
     [items]
   );
 
-  const count = useMemo(() => items.reduce((acc, x) => acc + x.qty, 0), [items]);
+  const count = useMemo(() => items.reduce((acc, x) => acc + (Number(x.qty) || 0), 0), [items]);
 
   const value = {
     items,
@@ -88,6 +118,8 @@ export function CartProvider({ children }) {
     removeItem,
     inc,
     dec,
+    setQty,
+    normalizeQty,
     clear,
     isOpen,
     open: () => setIsOpen(true),

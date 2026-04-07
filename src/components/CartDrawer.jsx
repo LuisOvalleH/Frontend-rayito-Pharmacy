@@ -3,14 +3,14 @@ import { useCart } from "../context/CartContext";
 import "./cartDrawer.css";
 
 export default function CartDrawer() {
-  const { items, subtotal, count, isOpen, close, inc, dec, removeItem, clear } = useCart();
+  const { items, subtotal, count, isOpen, close, inc, dec, setQty, normalizeQty, removeItem, clear } = useCart();
   const total = subtotal;
 
   const whatsappText = useMemo(() => {
     if (items.length === 0) return "";
 
     const lines = items.map((x) => {
-      const lineTotal = (Number(x.precio) || 0) * x.qty;
+      const lineTotal = (Number(x.precio) || 0) * (Number(x.qty) || 0);
       return `• ${x.nombre} x${x.qty} = Q${lineTotal.toFixed(2)}`;
     });
 
@@ -77,9 +77,20 @@ export default function CartDrawer() {
                       −
                     </button>
 
-                    <div className="cdQty" aria-label={`Cantidad de ${x.nombre}`}>
-                      {x.qty}
-                    </div>
+                    <input
+                      className="cdQtyInput"
+                      type="text"
+                      inputMode="numeric"
+                      value={x.qty}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d+$/.test(value)) {
+                          setQty(x.id, value);
+                        }
+                      }}
+                      onBlur={() => normalizeQty(x.id)}
+                      aria-label={`Cantidad de ${x.nombre}`}
+                    />
 
                     <button
                       onClick={() => inc(x.id)}
@@ -101,7 +112,7 @@ export default function CartDrawer() {
                 </div>
 
                 <div className="cdLineTotal">
-                  Q{(((Number(x.precio) || 0) * x.qty) || 0).toFixed(2)}
+                  Q{(((Number(x.precio) || 0) * (Number(x.qty) || 0)) || 0).toFixed(2)}
                 </div>
               </div>
             ))
@@ -117,8 +128,8 @@ export default function CartDrawer() {
 
             <div className="cdTotals">
               <div className="row">
-                <span>Subtotal</span>
-                <strong>Q{subtotal.toFixed(2)}</strong>
+                <span>Artículos</span>
+                <strong>{count}</strong>
               </div>
 
               <div className="row total">
