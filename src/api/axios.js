@@ -12,7 +12,6 @@ const instance = axios.create({
   baseURL: BASE_URL,
   headers: {
     Accept: "application/json",
-    "Content-Type": "application/json",
   },
 });
 
@@ -98,6 +97,7 @@ instance.interceptors.response.use(
     } catch (e) {
       runQueue(e, null);
       clearTokens();
+      window.location.href = "/login";
       return Promise.reject(e);
     } finally {
       isRefreshing = false;
