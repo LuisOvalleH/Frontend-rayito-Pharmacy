@@ -277,3 +277,68 @@
   opacity: .55;
 }
 
+
+/* ── Paginación ──*/
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.pageBtn {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid #dbe7f7;
+  background: #fff;
+  color: #0b2b4b;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.pageBtn:hover:not(:disabled) {
+  background: #0b2b4b;
+  color: #fff;
+}
+.pageBtn:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageNum {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e5edf7;
+  background: #fff;
+  color: #0b2b4b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.pageNum:hover {
+  background: #eef4fc;
+}
+.pageNum.active {
+  background: #0b2b4b;
+  color: #fff;
+  border-color: #0b2b4b;
+  font-weight: 800;
+}
+
+.pageEllipsis {
+  color: #9CA3AF;
+  padding: 0 4px;
+  font-size: 14px;
+}

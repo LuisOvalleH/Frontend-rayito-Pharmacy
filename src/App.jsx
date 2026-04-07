@@ -18,6 +18,7 @@ import AdminProductos from "./pages/admin/AdminProductos";
 import AdminCategorias from "./pages/admin/AdminCategorias";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
 import AdminServicios from "./pages/admin/AdminServicios";
+import AdminSiteConfig from "./pages/admin/AdminSiteConfig";
 
 export default function App() {
   return (
@@ -43,11 +44,12 @@ export default function App() {
               <Route path="categorias" element={<AdminCategorias />} />
               <Route path="usuarios" element={<AdminUsuarios />} />
               <Route path="servicios" element={<AdminServicios/>} />
+              <Route path="configuracion" element={<AdminSiteConfig />} />
             </Route>
           </Route>
         </Routes>
 
-        {/* Drawer global (solo una vez) */}
+        {/* Drawer global */}
         <CartDrawer />
       </BrowserRouter>
     </CartProvider>
