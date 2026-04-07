@@ -1,0 +1,28 @@
+.historial-container {
+  padding: 20px;
+}
+
+.historial-container h2 {
+  margin-bottom: 20px;
+}
+
+.historial-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.historial-table th,
+.historial-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.historial-table th {
+  background-color: #2c3e50;
+  color: white;
+}
+
+.historial-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}

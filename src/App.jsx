@@ -17,6 +17,7 @@ import AdminHome from "./pages/admin/AdminHome";
 import AdminProductos from "./pages/admin/AdminProductos";
 import AdminCategorias from "./pages/admin/AdminCategorias";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
+import Historial from "./pages/admin/Historial";
 
 export default function App() {
   return (
@@ -41,6 +42,8 @@ export default function App() {
               <Route path="productos" element={<AdminProductos />} />
               <Route path="categorias" element={<AdminCategorias />} />
               <Route path="usuarios" element={<AdminUsuarios />} />
+              <Route path="usuarios" element={<AdminUsuarios />} />
+              <Route path="historial" element={<Historial />} />
             </Route>
           </Route>
         </Routes>
