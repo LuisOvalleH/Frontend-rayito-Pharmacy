@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { getProducts } from "../api/products";
+import { getFeaturedProducts, getSiteConfig } from "../api/products";
 import ProductCard from "../components/ProductCard";
 import "./home.css";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [maxDestacdos, setMaxDestacados] = useState(8);
   const [q, setQ] = useState("");
   const navigate = useNavigate();
 
@@ -63,13 +64,12 @@ export default function Home() {
   const current = slides[idx];
   const next = slides[nextIdx];
 
-  // Autoplay
+  // Autoplay slider
   useEffect(() => {
     const t = setInterval(() => {
       setPendingIdx(nextIdx);
       setIsSliding(true);
     }, 5200);
-
     return () => clearInterval(t);
   }, [nextIdx]);
 
@@ -80,24 +80,29 @@ export default function Home() {
     setPendingIdx(null);
   };
 
-  // Productos
+  // Cargar productos destacados + configuración
   useEffect(() => {
     (async () => {
       try {
-        const data = await getProducts();
-        setProducts(Array.isArray(data) ? data : data?.results ?? []);
+        const [featured, config] = await Promise.all([
+          getFeaturedProducts(),
+          getSiteConfig(),
+        ]);
+        setFeaturedProducts(Array.isArray(featured) ? featured : []);
+        if (config?.max_destacados_home) {
+          setMaxDestacados(config.max_destacados_home);
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Error cargando destacados", e);
       }
     })();
   }, []);
 
-  const featured = useMemo(() => {
-    const filtered = products.filter((p) =>
-      (p?.nombre ?? "").toLowerCase().includes(q.toLowerCase())
-    );
-    return filtered.slice(0, 4);
-  }, [products, q]);
+  // Aplicar límite de max_destacados_home
+  const displayedFeatured = useMemo(
+    () => featuredProducts.slice(0, maxDestacdos),
+    [featuredProducts, maxDestacdos]
+  );
 
   const goSearch = (e) => {
     e.preventDefault();
@@ -132,7 +137,6 @@ export default function Home() {
             <h1>{current.title}</h1>
             <p>{current.subtitle}</p>
 
-            {/* Buscador (sin botones redundantes) */}
             <form className="heroSearch" onSubmit={goSearch}>
               <span className="heroSearchIcon">🔎</span>
               <input
@@ -160,7 +164,6 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Accesos principales */}
             <div className="heroHighlights">
               {highlights.map((h) => (
                 <div className="hCard" key={h.title}>
@@ -210,7 +213,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
               <div className="featureItem">
                 <div className="checkIcon">✓</div>
                 <div>
@@ -220,7 +222,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
               <div className="featureItem">
                 <div className="checkIcon">✓</div>
                 <div>
@@ -269,7 +270,6 @@ export default function Home() {
                 priorizando la atención humana y la rapidez.
               </p>
             </div>
-
             <div className="cardInfo">
               <div className="cardTop">
                 <span className="chip">Misión</span>
@@ -279,7 +279,6 @@ export default function Home() {
                 ágil y orientación responsable.
               </p>
             </div>
-
             <div className="cardInfo">
               <div className="cardTop">
                 <span className="chip">Visión</span>
@@ -293,7 +292,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SERVICIOS (preview) */}
+      {/* SERVICIOS */}
       <section className="section">
         <div className="container">
           <div className="sectionHead">
@@ -304,7 +303,6 @@ export default function Home() {
                 Atención, abastecimiento y soluciones rápidas para clientes y negocios.
               </p>
             </div>
-
             <Link className="btnSmall" to="/servicios">
               Ver todos
             </Link>
@@ -320,7 +318,6 @@ export default function Home() {
                 Abastecimiento para farmacias, clínicas y negocios locales.
               </p>
             </div>
-
             <div className="serviceCard">
               <div className="svcTop">
                 <div className="svcIcon">✅</div>
@@ -330,7 +327,6 @@ export default function Home() {
                 Productos actualizados, disponibles y por estado.
               </p>
             </div>
-
             <div className="serviceCard">
               <div className="svcTop">
                 <div className="svcIcon">🚚</div>
@@ -347,23 +343,37 @@ export default function Home() {
       {/* PRODUCTOS DESTACADOS */}
       <section className="section soft">
         <div className="container">
-          <div className="centerHead">
-            <div className="kicker">Catálogo</div>
-            <h2>Productos Destacados</h2>
-            <p>Encuentra los mejores productos farmacéuticos disponibles.</p>
+          <div className="sectionHead">
+            <div>
+              <div className="kicker">Catálogo</div>
+              <h2>Productos Destacados</h2>
+              <p className="muted">
+                {displayedFeatured.length > 0
+                  ? "Los mejores productos farmacéuticos seleccionados para ti."
+                  : "Próximamente publicaremos los productos destacados."}
+              </p>
+            </div>
+            {displayedFeatured.length > 0 && (
+              <Link className="btnSmall" to="/productos">
+                Ver catálogo completo
+              </Link>
+            )}
           </div>
 
-          <div className="gridProducts">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-
-          <div className="centerCta">
-            <Link className="btnPrimary" to="/api/productos">
-              Ver Todos los Productos
-            </Link>
-          </div>
+          {displayedFeatured.length > 0 ? (
+            <div className="gridProducts">
+              {displayedFeatured.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="emptyFeatured">
+              <p>No hay productos destacados en este momento.</p>
+              <Link className="btnPrimary" to="/productos">
+                Ver todos los productos
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </div>

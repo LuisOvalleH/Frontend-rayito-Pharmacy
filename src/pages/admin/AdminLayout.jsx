@@ -1,14 +1,14 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { logout } from "../../api/auth";
-
+ 
 export default function AdminLayout() {
   const nav = useNavigate();
-
+ 
   const salir = () => {
     logout();
     nav("/admin/login", { replace: true });
   };
-
+ 
   const linkStyle = ({ isActive }) => ({
     textDecoration: "none",
     padding: "10px 12px",
@@ -18,7 +18,7 @@ export default function AdminLayout() {
     background: isActive ? "#eaf2ff" : "transparent",
     border: isActive ? "1px solid #dbe7f7" : "1px solid transparent",
   });
-
+ 
   return (
     <div style={{ minHeight: "100vh", background: "#f7fbff" }}>
       <div
@@ -60,7 +60,7 @@ export default function AdminLayout() {
               <div style={{ fontSize: 12, color: "#5c6b7b" }}>Farquetsa</div>
             </div>
           </div>
-
+ 
           <nav style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <NavLink to="/admin" end style={linkStyle}>
               Inicio
@@ -74,7 +74,10 @@ export default function AdminLayout() {
             <NavLink to="/admin/usuarios" style={linkStyle}>
               Usuarios
             </NavLink>
-
+            <NavLink to="/admin/configuracion" style={linkStyle}>
+              Configuración
+            </NavLink>
+ 
             <button
               onClick={salir}
               style={{
@@ -94,10 +97,11 @@ export default function AdminLayout() {
           </nav>
         </div>
       </div>
-
+ 
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 18px" }}>
         <Outlet />
       </main>
     </div>
   );
 }
+ 
