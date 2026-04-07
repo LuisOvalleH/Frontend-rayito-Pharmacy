@@ -3,12 +3,17 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 if (!BASE_URL) {
-  console.error("❌ Falta VITE_API_URL en tu .env (ej: VITE_API_URL=http://127.0.0.1:8000/api)");
+  console.error(
+    "❌ Falta VITE_API_URL en tu .env (ej: VITE_API_URL=http://127.0.0.1:8000/api)",
+  );
 }
 
 const instance = axios.create({
   baseURL: BASE_URL,
-  headers: { Accept: "application/json" },
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
 });
 
 const getAccess = () => localStorage.getItem("access");
@@ -48,7 +53,7 @@ instance.interceptors.response.use(
 
     const url = original.url || "";
     const isAuthCall =
-      url.includes("/auth/login/") || url.includes("/auth/refresh/");
+      url.includes("/auth/login/") || url.includes("/auth/token/refresh/");
 
     if (error?.response?.status !== 401 || isAuthCall || original._retry) {
       return Promise.reject(error);
@@ -76,9 +81,9 @@ instance.interceptors.response.use(
 
     try {
       const resp = await axios.post(
-        `${BASE_URL}/auth/refresh/`,
+        `${BASE_URL}/auth/token/refresh/`,
         { refresh },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       const newAccess = resp.data?.access;
@@ -97,7 +102,7 @@ instance.interceptors.response.use(
     } finally {
       isRefreshing = false;
     }
-  }
+  },
 );
 
 export default instance;

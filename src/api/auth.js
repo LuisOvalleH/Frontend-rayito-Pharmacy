@@ -10,14 +10,15 @@ export async function login(username, password) {
   localStorage.setItem(ACCESS_KEY, data.access);
   localStorage.setItem(REFRESH_KEY, data.refresh);
 
-  const me = await getMe();
+  const me = await getCurrentUser();
   if (!me?.is_staff) {
     logout();
     throw new Error("Tu usuario no tiene permisos de administrador.");
   }
 
+  const role = me.role || (me.is_superuser ? "superadmin" : "admin");
   localStorage.setItem(ADMIN_FLAG_KEY, "1");
-  localStorage.setItem(ROLE_KEY, me.role);
+  localStorage.setItem(ROLE_KEY, role);
   return { ...data, me };
 }
 
@@ -25,9 +26,17 @@ export function getRole() {
   return localStorage.getItem(ROLE_KEY);
 }
 
-export async function getMe() {
-  const { data } = await api.get("/auth/me/");
-  return data;
+export async function getCurrentUser() {
+  try {
+    const { data } = await api.get("/current-user/");
+    return data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const { data } = await api.get("/auth/me/");
+      return data;
+    }
+    throw err;
+  }
 }
 
 export function logout() {
