@@ -37,7 +37,7 @@ export default function Navbar() {
 
         <div className="navActions">
           <button className="cartBtn" type="button" onClick={open}>
-            Carrito
+            <span className="cartIcon" aria-hidden="true">🛒</span>
             {count > 0 && <span className="cartBadge">{count}</span>}
           </button>
 
