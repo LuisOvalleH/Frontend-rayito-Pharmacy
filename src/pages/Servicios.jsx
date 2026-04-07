@@ -1,9 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  getServicios,
+  getPasos,
+  getConfianza,
+} from "../api/servicios";
 import "./servicios.css";
 
 export default function ServiciosPage() {
-  // Animaciones al hacer scroll (sin librerías)
+  const [services, setServices] = useState([]);
+  const [steps, setSteps] = useState([]);
+  const [trust, setTrust] = useState([]);
+
   useEffect(() => {
     const nodes = document.querySelectorAll(".reveal");
 
@@ -12,8 +20,6 @@ export default function ServiciosPage() {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             e.target.classList.add("in");
-            // Si querés que solo se anime una vez:
-            io.unobserve(e.target);
           }
         });
       },
@@ -21,76 +27,46 @@ export default function ServiciosPage() {
     );
 
     nodes.forEach((n) => io.observe(n));
+
     return () => io.disconnect();
+  }, [services, steps, trust]);
+
+  // Cargar datos desde backend
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const serviciosData = await getServicios();
+        const pasosData = await getPasos();
+        const confianzaData = await getConfianza();
+
+        setServices(
+          Array.isArray(serviciosData)
+            ? serviciosData
+            : serviciosData.results || []
+        );
+
+        setSteps(
+          Array.isArray(pasosData)
+            ? pasosData
+            : pasosData.results || []
+        );
+
+        setTrust(
+          Array.isArray(confianzaData)
+            ? confianzaData
+            : confianzaData.results || []
+        );
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+
+    cargarDatos();
   }, []);
-
-  const services = [
-    {
-      icon: "📦",
-      title: "Distribución farmacéutica al por mayor",
-      text:
-        "Abastecemos farmacias, clínicas y negocios del sector salud con productos confiables, control de pedidos y disponibilidad real.",
-    },
-    {
-      icon: "🧑‍⚕️",
-      title: "Venta a clientes individuales",
-      text:
-        "Atención directa y orientación responsable para elegir lo que necesitas, con opciones claras y seguimiento.",
-    },
-    {
-      icon: "✅",
-      title: "Catálogo por disponibilidad",
-      text:
-        "Nuestro catálogo se mantiene actualizado por estado (disponible, agotado, descontinuado) para cotizar rápido.",
-    },
-    {
-      icon: "🚚",
-      title: "Envíos y coordinación logística",
-      text:
-        "Coordinamos entregas según ubicación y disponibilidad, buscando siempre la opción más práctica para ti.",
-    },
-    {
-      icon: "💬",
-      title: "Asesoría farmacéutica",
-      text:
-        "Orientación básica sobre productos, uso responsable y alternativas disponibles, con personal capacitado.",
-    },
-    {
-      icon: "⚡",
-      title: "Cotización rápida",
-      text:
-        "Envíanos tu lista y te respondemos con disponibilidad y opciones claras en el menor tiempo posible.",
-    },
-  ];
-
-  const steps = [
-    { n: "01", title: "Consulta", text: "Nos indicas tus productos o necesidades específicas." },
-    { n: "02", title: "Validación", text: "Revisamos disponibilidad, presentaciones y condiciones." },
-    { n: "03", title: "Cotización", text: "Te enviamos una propuesta clara y sin compromisos." },
-    { n: "04", title: "Entrega / Retiro", text: "Coordinamos entrega o retiro según tu zona." },
-  ];
-
-  const trust = [
-    {
-      icon: "🏆",
-      title: "Más de 20 años de experiencia",
-      text: "Trayectoria respaldada por atención constante y relaciones comerciales duraderas.",
-    },
-    {
-      icon: "🧪",
-      title: "Productos confiables",
-      text: "Trabajamos con proveedores y laboratorios reconocidos para asegurar calidad.",
-    },
-    {
-      icon: "🤝",
-      title: "Atención personalizada",
-      text: "Seguimiento real según tu necesidad: mayorista o cliente individual.",
-    },
-  ];
 
   return (
     <div className="servicesPage">
-      {/* HERO con fondo tech animado */}
+      {/* HERO */}
       <section className="servicesHero">
         <div className="techBg" aria-hidden="true">
           <div className="grid" />
@@ -109,15 +85,15 @@ export default function ServiciosPage() {
           </h1>
 
           <p className="heroText reveal from-left">
-            Soluciones confiables para farmacias, clínicas, negocios y clientes individuales en Guatemala.
-            Cotiza rápido con atención cercana.
+            Soluciones confiables para farmacias, clínicas, negocios y clientes
+            individuales en Guatemala. Cotiza rápido con atención cercana.
           </p>
 
-          {/* Solo 1 CTA principal arriba (sin redundancia) */}
           <div className="heroActions reveal from-left">
             <Link className="btnPrimary" to="/contacto">
               Solicitar cotización
             </Link>
+
             <Link className="btnGhost" to="/productos">
               Ver catálogo
             </Link>
@@ -128,14 +104,17 @@ export default function ServiciosPage() {
               <strong>20+</strong>
               <span>años de experiencia</span>
             </div>
+
             <div className="statCard">
               <strong>Catálogo</strong>
               <span>actualizado por estado</span>
             </div>
+
             <div className="statCard">
               <strong>Atención</strong>
               <span>personalizada y responsable</span>
             </div>
+
             <div className="statCard">
               <strong>Envíos</strong>
               <span>según zona y disponibilidad</span>
@@ -152,7 +131,8 @@ export default function ServiciosPage() {
               <div className="kicker reveal from-left">SERVICIOS</div>
               <h2 className="reveal from-left">Nuestros Servicios</h2>
               <p className="muted reveal from-left">
-                Soluciones pensadas para rapidez, claridad en cotizaciones y disponibilidad real.
+                Soluciones pensadas para rapidez, claridad en cotizaciones y
+                disponibilidad real.
               </p>
             </div>
           </div>
@@ -160,11 +140,16 @@ export default function ServiciosPage() {
           <div className="servicesGrid">
             {services.map((s, i) => (
               <article
-                key={s.title}
-                className={`serviceCard reveal ${i % 2 === 0 ? "from-left" : "from-right"}`}
+                key={s.id}
+                className={`serviceCard reveal ${
+                  i % 2 === 0 ? "from-left" : "from-right"
+                }`}
                 style={{ transitionDelay: `${(i % 6) * 60}ms` }}
               >
-                <div className="serviceIcon" aria-hidden="true">{s.icon}</div>
+                <div className="serviceIcon" aria-hidden="true">
+                  {s.icon}
+                </div>
+
                 <h3>{s.title}</h3>
                 <p>{s.text}</p>
               </article>
@@ -180,18 +165,20 @@ export default function ServiciosPage() {
             <div>
               <div className="kicker reveal from-left">PROCESO</div>
               <h2 className="reveal from-left">Cómo trabajamos</h2>
-              <p className="muted reveal from-left">Un flujo simple para cotizar sin complicaciones.</p>
+              <p className="muted reveal from-left">
+                Un flujo simple para cotizar sin complicaciones.
+              </p>
             </div>
           </div>
 
           <div className="processGrid">
             {steps.map((st, i) => (
               <div
-                key={st.n}
-                className={`processStep reveal from-up`}
+                key={st.id}
+                className="processStep reveal from-up"
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
-                <div className="stepBadge">{st.n}</div>
+                <div className="stepBadge">{st.numero}</div>
                 <h4>{st.title}</h4>
                 <p>{st.text}</p>
               </div>
@@ -216,23 +203,31 @@ export default function ServiciosPage() {
           <div className="trustGrid">
             {trust.map((t, i) => (
               <div
-                key={t.title}
-                className={`trustCard reveal ${i === 1 ? "from-up" : i === 0 ? "from-left" : "from-right"}`}
+                key={t.id}
+                className={`trustCard reveal ${
+                  i === 1
+                    ? "from-up"
+                    : i === 0
+                    ? "from-left"
+                    : "from-right"
+                }`}
               >
-                <div className="trustIcon" aria-hidden="true">{t.icon}</div>
+                <div className="trustIcon">{t.icon}</div>
                 <strong>{t.title}</strong>
                 <p>{t.text}</p>
               </div>
             ))}
           </div>
 
-          {/* CTA final (solo 1) */}
           <div className="ctaPanel reveal from-up">
             <div>
               <div className="ctaKicker">¿LISTO PARA COTIZAR?</div>
-              <div className="ctaTitle">Te ayudamos a encontrar lo que necesitas</div>
+              <div className="ctaTitle">
+                Te ayudamos a encontrar lo que necesitas
+              </div>
               <p className="ctaText">
-                Para cotizaciones, abastecimiento o información adicional, comunícate con nuestro equipo.
+                Para cotizaciones, abastecimiento o información adicional,
+                comunícate con nuestro equipo.
               </p>
             </div>
 
