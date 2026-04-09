@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function Historial() {
-  const [filtro, setFiltro] = useState("Productos");
+  const [filtro, setFiltro] = useState("Todos");
 
   const historial = [
     {
@@ -25,8 +25,7 @@ export default function Historial() {
     },
   ];
 
-  const historialFiltrado = historial.filter((item) => item.tipo === filtro);
-
+  const historialFiltrado = filtro === "Todos" ? historial : historial.filter((item) => item.tipo === filtro);
   const exportarPDF = () => {
     const doc = new jsPDF();
     doc.text("Historial de acciones", 14, 15);
@@ -85,7 +84,7 @@ export default function Historial() {
         {/* Panel derecho: filtros + exportar */}
         <div className="historial-panel">
           <div className="filtros">
-            {["Productos", "Categorías", "Usuarios"].map((tipo) => (
+            {["Todos", "Productos", "Categorías", "Usuarios"].map((tipo) => (
               <button
                 key={tipo}
                 className={`btn-filtro ${filtro === tipo ? "activo" : ""}`}
