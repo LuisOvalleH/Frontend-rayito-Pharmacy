@@ -2,94 +2,88 @@ import { useState, useEffect } from "react";
 import "./historial.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getHistorial, tiempodelimpieza, getTiempoLimpieza } from "../../api/historial";
 
 const OPCIONES_LIMPIEZA = [
-  { label: "Nunca", meses: null },
+  { label: "Nunca", meses: 0 },
+  { label: "Cada 2 meses", meses: 2 },
   { label: "Cada 6 meses", meses: 6 },
   { label: "Cada año", meses: 12 },
-  { label: "Todos", meses: "todos" },
 ];
 
-const historialInicial = [
-  {
-    usuario: "admin1",
-    accion: "Creó usuario",
-    fecha: "2026-03-20",
-    hora: "10:30 AM",
-    detalle: "Usuario: juan123",
-    tipo: "Usuarios",
-  },
-  {
-    usuario: "admin2",
-    accion: "Eliminó producto",
-    fecha: "2026-03-20",
-    hora: "11:15 AM",
-    detalle: "Producto: Paracetamol",
-    tipo: "Productos",
-  },
-  {
-    usuario: "admin3",
-    accion: "Editó categoría",
-    fecha: "2025-01-10",
-    hora: "09:00 AM",
-    detalle: "Categoría: Analgésicos",
-    tipo: "Categorías",
-  },
-];
-
-function limpiarPorAntiguedad(lista, meses) {
-  if (!meses || meses === "todos") return [];
-  const limite = new Date();
-  limite.setMonth(limite.getMonth() - meses);
-  return lista.filter((item) => new Date(item.fecha) >= limite);
-}
+const MAPA_MODULOS = {
+  "Todos": null,
+  "Productos": "productos",
+  "Categorías": "categorias",
+  "Usuarios": "usuarios"
+};
 
 export default function Historial() {
   const [filtro, setFiltro] = useState("Todos");
-  const [historial, setHistorial] = useState(historialInicial);
-  const [limpieza, setLimpieza] = useState("Nunca");
+  const [historial, setHistorial] = useState([]);
+  const [limpieza, setLimpieza] = useState(""); // Estado para el label visible
+  const [configuracionReal, setConfiguracionReal] = useState(null); // Para volver atrás si cancela
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
+
   useEffect(() => {
-    if (limpieza === "Nunca") {
-      setHistorial(historialInicial);
-    }
-  }, [limpieza]);
+    const inicializar = async () => {
+      try {
+        const mesesBD = await getTiempoLimpieza();
+        const encontrada = OPCIONES_LIMPIEZA.find(o => o.meses === mesesBD) || OPCIONES_LIMPIEZA[0];
+        setLimpieza(encontrada.label);
+        setConfiguracionReal(encontrada.label);
+      } catch (error) {
+        console.error("Error al cargar configuración:", error);
+      }
+    };
+    inicializar();
+  }, []);
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await getHistorial({ modulo: MAPA_MODULOS[filtro] });
+        setHistorial(data);
+      } catch (error) {
+        console.error("Error al cargar el historial:", error);
+      }
+    };
+    loadData();
+  }, [filtro]);
 
   const handleLimpiezaChange = (e) => {
-    const valor = e.target.value;
-    setLimpieza(valor);
-    if (valor !== "Nunca") {
-      setMostrarConfirmacion(true);
-    }
+    setLimpieza(e.target.value);
+    setMostrarConfirmacion(true);
   };
 
-  const handleConfirmar = () => {
-    const opcion = OPCIONES_LIMPIEZA.find((o) => o.label === limpieza);
-    if (opcion.meses === "todos") {
-      setHistorial([]);
-    } else {
-      const limpio = limpiarPorAntiguedad(historial, opcion.meses);
-      setHistorial(limpio);
+  const handleConfirmar = async () => {
+    try {
+      const opcion = OPCIONES_LIMPIEZA.find((o) => o.label === limpieza);
+      await tiempodelimpieza(opcion.meses);
+      setConfiguracionReal(limpieza); 
+      
+
+      const data = await getHistorial({ modulo: MAPA_MODULOS[filtro] });
+      setHistorial(data);
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      setLimpieza(configuracionReal);
+    } finally {
+      setMostrarConfirmacion(false);
     }
-    setMostrarConfirmacion(false);
-    setLimpieza("Nunca");
   };
 
   const handleCancelar = () => {
+    setLimpieza(configuracionReal);
     setMostrarConfirmacion(false);
-    setLimpieza("Nunca");
   };
-
-  const historialFiltrado =
-    filtro === "Todos"
-      ? historial
-      : historial.filter((item) => item.tipo === filtro);
 
   const exportarPDF = () => {
     const doc = new jsPDF();
     doc.text("Historial de acciones", 14, 15);
-    const tabla = historialFiltrado.map((item) => [
+    const tabla = historial.map((item) => [
       item.usuario,
       item.accion,
       item.fecha,
@@ -109,7 +103,6 @@ export default function Historial() {
       <h2>Historial de acciones</h2>
 
       <div className="historial-layout">
-        {/* Tabla */}
         <table className="historial-tabla">
           <thead>
             <tr>
@@ -121,8 +114,8 @@ export default function Historial() {
             </tr>
           </thead>
           <tbody>
-            {historialFiltrado.length > 0 ? (
-              historialFiltrado.map((item, index) => (
+            {historial.length > 0 ? (
+              historial.map((item, index) => (
                 <tr key={index}>
                   <td>{item.usuario}</td>
                   <td>{item.accion}</td>
@@ -133,20 +126,15 @@ export default function Historial() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="sin-resultados">
-                  Sin resultados para este filtro
-                </td>
+                <td colSpan={5} className="sin-resultados">Sin resultados</td>
               </tr>
             )}
           </tbody>
         </table>
 
-        {/* Panel derecho */}
         <div className="historial-panel">
-
-          {/* Filtros */}
           <div className="filtros">
-            {["Todos", "Productos", "Categorías", "Usuarios"].map((tipo) => (
+            {Object.keys(MAPA_MODULOS).map((tipo) => (
               <button
                 key={tipo}
                 className={`btn-filtro ${filtro === tipo ? "activo" : ""}`}
@@ -157,47 +145,35 @@ export default function Historial() {
             ))}
           </div>
 
-          {/* Limpieza */}
           <div className="limpieza">
-            <label className="limpieza-label">🗑️ Borrar registros:</label>
+            <label className="limpieza-label">🗑️ Frecuencia de limpieza:</label>
             <select
               className="limpieza-select"
               value={limpieza}
               onChange={handleLimpiezaChange}
             >
               {OPCIONES_LIMPIEZA.map((o) => (
-                <option key={o.label} value={o.label}>
-                  {o.label}
-                </option>
+                <option key={o.label} value={o.label}>{o.label}</option>
               ))}
             </select>
           </div>
 
-          {/* Exportar */}
-          <button className="btn-pdf" onClick={exportarPDF}>
-            Exportar PDF
-          </button>
+          <button className="btn-pdf" onClick={exportarPDF}>Exportar PDF</button>
         </div>
       </div>
 
-      {/* Modal de confirmación */}
       {mostrarConfirmacion && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3 className="modal-titulo">¿Borrar historial?</h3>
+            <h3 className="modal-titulo">¿Cambiar frecuencia de limpieza?</h3>
             <p className="modal-texto">
-              {limpieza === "Todos"
-                ? "Se eliminará todo el historial de acciones."
-                : `Se eliminarán todos los registros con más de ${limpieza.toLowerCase()}.`}{" "}
-              Esta acción no se puede deshacer.
+              {limpieza === "Nunca" 
+                ? "Se dejarán de eliminar registros automáticamente." 
+                : `Se conservarán solo los registros de los últimos ${limpieza.toLowerCase().replace("cada ", "")}.`}
             </p>
             <div className="modal-acciones">
-              <button className="modal-cancelar" onClick={handleCancelar}>
-                Cancelar
-              </button>
-              <button className="modal-confirmar" onClick={handleConfirmar}>
-                Aceptar
-              </button>
+              <button className="modal-cancelar" onClick={handleCancelar}>Cancelar</button>
+              <button className="modal-confirmar" onClick={handleConfirmar}>Aceptar</button>
             </div>
           </div>
         </div>

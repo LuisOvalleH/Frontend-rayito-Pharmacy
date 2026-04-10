@@ -71,9 +71,7 @@ export default function AdminLayout() {
               <><NavLink to="/admin" end style={linkStyle}>
                 Inicio
               </NavLink>
-              <NavLink to="/admin/historial" style={linkStyle}>
-                  Historial
-              </NavLink>
+             
               <NavLink to="/admin/productos" style={linkStyle}>
                   Productos
               </NavLink>
