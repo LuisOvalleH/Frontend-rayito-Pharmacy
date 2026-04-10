@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Productos from "./pages/ProductosPage";
 import Servicios from "./pages/Servicios";
 import Contacto from "./pages/Contacto";
+
 import { CartProvider } from "./context/CartContext";
 import CartDrawer from "./components/CartDrawer";
 
@@ -17,9 +18,7 @@ import AdminHome from "./pages/dashboard/AdminHome";
 import AdminProductos from "./pages/dashboard/AdminProductos";
 import AdminCategorias from "./pages/dashboard/AdminCategorias";
 import AdminUsuarios from "./pages/dashboard/AdminUsuarios";
-
-
-
+import Historial from "./pages/dashboard/Historial"; // ✅ IMPORT AGREGADO
 
 export default function App() {
   return (
@@ -31,28 +30,30 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/productos" element={<Productos />} />
             <Route path="/servicios" element={<Servicios />} />
-            <Route path="/contacto" element={<Contacto />} />            
+            <Route path="/contacto" element={<Contacto />} />
           </Route>
 
           {/* ================= ADMIN LOGIN ================= */}
           <Route path="/login" element={<AdminLogin />} />
 
           {/* ================= ADMIN PROTEGIDO ================= */}
-  
-          <Route element={<PrivateRoute allowedRoles={["admin", "superadmin"]} />}>
+          <Route
+            element={
+              <PrivateRoute allowedRoles={["admin", "superadmin"]} />
+            }
+          >
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminHome />} />
               <Route path="productos" element={<AdminProductos />} />
               <Route path="categorias" element={<AdminCategorias />} />
 
-
-              {/* Esta ruta solo la verán los superadmin, pero dentro del layout de admin */}
-              <Route element={<PrivateRoute allowedRoles={["superadmin"]} />}>
+              {/* SOLO SUPERADMIN */}
+              <Route
+                element={<PrivateRoute allowedRoles={["superadmin"]} />}
+              >
                 <Route path="usuarios" element={<AdminUsuarios />} />
+                <Route path="historial" element={<Historial />} /> {/* ✅ CORREGIDO */}
               </Route>
-
-             
-
             </Route>
           </Route>
         </Routes>
