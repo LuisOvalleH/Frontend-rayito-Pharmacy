@@ -83,8 +83,32 @@ export default function AdminLayout() {
           </div>
 
           <nav style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {(role === "admin" || role === "superadmin") && baseLinks}
+
+            {role === "admin" && (
+              <><NavLink to="/admin" end style={linkStyle}>
+                Inicio
+              </NavLink>
+             
+              <NavLink to="/admin/productos" style={linkStyle}>
+                  Productos
+              </NavLink>
+              <NavLink to="/admin/categorias" style={linkStyle}>
+                  Categorías
+              </NavLink></> )}
+
             {role === "superadmin" && (
+              <><NavLink to="/admin" end style={linkStyle}>
+                Inicio
+              </NavLink>
+              <NavLink to="/admin/historial" style={linkStyle}>
+                  Historial
+              </NavLink>
+              <NavLink to="/admin/productos" style={linkStyle}>
+                  Productos
+              </NavLink>
+              <NavLink to="/admin/categorias" style={linkStyle}>
+                  Categorías
+              </NavLink>
               <NavLink to="/admin/usuarios" style={linkStyle}>
                 Usuarios
               </NavLink>

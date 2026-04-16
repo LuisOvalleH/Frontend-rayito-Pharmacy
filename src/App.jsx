@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Productos from "./pages/ProductosPage";
 import Servicios from "./pages/Servicios";
 import Contacto from "./pages/Contacto";
+
 import { CartProvider } from "./context/CartContext";
 import CartDrawer from "./components/CartDrawer";
 
@@ -34,8 +35,11 @@ export default function App() {
           <Route path="/login" element={<AdminLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />
 
+          {/* ================= ADMIN PROTEGIDO ================= */}
           <Route
-            element={<PrivateRoute allowedRoles={["admin", "superadmin"]} />}
+            element={
+              <PrivateRoute allowedRoles={["admin", "superadmin"]} />
+            }
           >
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminHome />} />
@@ -48,6 +52,7 @@ export default function App() {
                 element={<PrivateRoute allowedRoles={["superadmin"]} />}
               >
                 <Route path="usuarios" element={<AdminUsuarios />} />
+                <Route path="historial" element={<Historial />} /> {/* ✅ CORREGIDO */}
               </Route>
             </Route>
           </Route>
