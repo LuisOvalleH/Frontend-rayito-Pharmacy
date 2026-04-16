@@ -1,6 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { logout, getRole} from "../../api/auth";
-
+import { getRole, logout } from "../../api/auth";
 
 export default function AdminLayout() {
   const role = getRole();
@@ -21,7 +20,25 @@ export default function AdminLayout() {
     border: isActive ? "1px solid #dbe7f7" : "1px solid transparent",
   });
 
-
+  const baseLinks = (
+    <>
+      <NavLink to="/admin" end style={linkStyle}>
+        Inicio
+      </NavLink>
+      <NavLink to="/admin/productos" style={linkStyle}>
+        Productos
+      </NavLink>
+      <NavLink to="/admin/categorias" style={linkStyle}>
+        Categorias
+      </NavLink>
+      <NavLink to="/admin/servicios" style={linkStyle}>
+        Servicios
+      </NavLink>
+      <NavLink to="/admin/historial" style={linkStyle}>
+        Historial
+      </NavLink>
+    </>
+  );
 
   return (
     <div style={{ minHeight: "100vh", background: "#f7fbff" }}>
@@ -93,8 +110,9 @@ export default function AdminLayout() {
                   Categorías
               </NavLink>
               <NavLink to="/admin/usuarios" style={linkStyle}>
-                  Usuarios
-            </NavLink></>)}
+                Usuarios
+              </NavLink>
+            )}
 
             <button
               onClick={salir}
@@ -110,7 +128,7 @@ export default function AdminLayout() {
                 color: "#0b2b4b",
               }}
             >
-              Cerrar sesión
+              Cerrar sesion
             </button>
           </nav>
         </div>
