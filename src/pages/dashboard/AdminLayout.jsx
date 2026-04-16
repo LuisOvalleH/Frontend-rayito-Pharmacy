@@ -85,32 +85,56 @@ export default function AdminLayout() {
           <nav style={{ display: "flex", gap: 10, alignItems: "center" }}>
 
             {role === "admin" && (
-              <><NavLink to="/admin" end style={linkStyle}>
+              <NavLink to="/admin" end style={linkStyle}>
                 Inicio
               </NavLink>
-             
+            )}
+            {role === "admin" && (
               <NavLink to="/admin/productos" style={linkStyle}>
                   Productos
               </NavLink>
+            )}
+            {role === "admin" && (
               <NavLink to="/admin/categorias" style={linkStyle}>
                   Categorías
-              </NavLink></> )}
+              </NavLink>
+            )}
+            {role === "admin" && (
+              <NavLink to="/admin/servicios" style={linkStyle}>
+                Servicios
+              </NavLink>
+            )}
 
             {role === "superadmin" && (
-              <><NavLink to="/admin" end style={linkStyle}>
+              <NavLink to="/admin" end style={linkStyle}>
                 Inicio
               </NavLink>
-              <NavLink to="/admin/historial" style={linkStyle}>
-                  Historial
-              </NavLink>
+            )}
+            
+            {role === "superadmin" && (
               <NavLink to="/admin/productos" style={linkStyle}>
                   Productos
               </NavLink>
+            )}
+            {role === "superadmin" && (
               <NavLink to="/admin/categorias" style={linkStyle}>
                   Categorías
               </NavLink>
+            )}
+            {role === "superadmin" && (
               <NavLink to="/admin/usuarios" style={linkStyle}>
                 Usuarios
+              </NavLink>
+            )}
+            {role === "superadmin" && (
+              <NavLink to="/admin/servicios" style={linkStyle}>
+                Servicios
+              </NavLink>
+
+            )}
+            {role === "superadmin" && (
+              <NavLink to="/admin/historial" style={linkStyle}>
+                  Historial
               </NavLink>
             )}
 
