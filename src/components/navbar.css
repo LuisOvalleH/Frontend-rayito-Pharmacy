@@ -18,9 +18,10 @@
 }
 .brand{ display:flex; align-items:center; gap:10px; }
 .brandLogo{
-  width: 38px; height: 38px; border-radius: 12px;
-  display:flex; align-items:center; justify-content:center;
-  background:#0b2b4d; color:#fff; font-weight:800;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  display: block;
 }
 .brandText{ display:flex; flex-direction:column; line-height:1.1; }
 .brandText span{ font-size:12px; color:#5c6b7b; }
@@ -39,6 +40,12 @@
   color:#0b2b4d;
 }
 
+.navActions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
 .callBtn{
   text-decoration:none;
   background:#0b2b4d;
@@ -47,24 +54,40 @@
   border-radius:12px;
   font-weight:700;
   font-size:14px;
+  white-space:nowrap;
 }
 .cartBtn{
   border:1px solid #dbe7f7;
   background:#fff;
   color:#0b2b4b;
-  padding:10px 12px;
+  padding:0;
+  width:44px;
+  height:44px;
   border-radius:14px;
   font-weight:800;
   cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   position:relative;
+  flex-shrink:0;
+}
+.cartBtn:hover{
+  background:#f5f9ff;
+}
+.cartIcon{
+  font-size:20px;
+  line-height:1;
 }
 .cartBadge{
   position:absolute;
-  top:-8px; right:-8px;
+  top:-6px; right:-6px;
   background:#0b2b4b;
   color:#fff;
-  width:22px; height:22px;
+  min-width:20px; height:20px;
+  padding:0 5px;
   border-radius:999px;
   display:flex; align-items:center; justify-content:center;
-  font-size:12px;
+  font-size:11px;
+  font-weight:700;
 }
