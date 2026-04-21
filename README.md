@@ -1,16 +1,66 @@
-# React + Vite
+# Rayito Pharmacy Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend web for Rayito Pharmacy, built with React and Vite. The application includes public shopping flows, protected admin routes, product/category management, service pages, contact handling, user administration, and PDF/report support.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- Vite / Rolldown Vite
+- React Router
+- Axios
+- jsPDF and jsPDF AutoTable
+- ESLint
 
-## React Compiler
+## Main Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Public product and service browsing
+- Shopping cart experience
+- Admin login with protected dashboard routes
+- Product and category administration
+- Service, contact, user, and history modules
+- API integration through a configurable backend URL
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+The app runs locally at:
+
+```text
+http://localhost:5173
+```
+
+## Environment Variables
+
+```env
+VITE_API_URL=http://127.0.0.1:8000/api
+```
+
+## Available Scripts
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
+```
+
+## Related Repository
+
+- Backend: https://github.com/LuisOvalleH/Backend-Rayito-Pharmacy-FAQUETSA
